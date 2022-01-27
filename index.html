@@ -1,0 +1,153 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calming Meditation</title>
+
+    <link rel="stylesheet" href="pico.css">
+    <style>
+    </style>
+    <script type="text/javascript">
+        let delay = 120000;
+        let interval = null;
+        let request = window.indexedDB.open("Keep Window Open", 3);
+        let meditationTimer = null;
+        let backgroundPlaying = false;
+        let meditationDelay = 600_000; //Ten minutes
+        let volume = 0.5;
+
+        const playSound = () => {
+            var audio = new Audio('bell1.wav');
+            audio.volume = volume;
+            audio.play();
+            console.log('Play ' + interval);
+        };
+
+        async function playBackground() {
+            if (backgroundPlaying) return;
+            try {
+                var audio = new Audio('silence.wav');
+                audio.volume = 1;
+                audio.loop = true
+                audio.play();
+            } catch (e) {
+                backgroundPlaying = false;
+            }
+        }
+        const wait = (ms) => new Promise(r => setTimeout(r, ms))
+        const startBell = () => {
+            if (interval == null) {
+                playSound();
+                console.log('Interval set to ' + delay);
+                interval = setInterval(() => {
+                    playSound();
+                }, delay);
+            } else {
+                alert('Sound already running');
+            }
+        };
+
+        function stopBell() {
+            clearInterval(interval);
+            interval = null;
+            console.log('Stopped');
+        };
+
+        function resetBell(timerInterval, displayValue) {
+            delay = timerInterval;
+            console.log('Timer set to ' + displayValue + ' ' + timerInterval);
+            if (interval !== null) {
+                stopBell();
+                startBell();
+                console.log("Restarted Bell");
+            }
+        }
+
+        function resetMeditation(timerInterval, displayValue) {
+            meditationDelay = timerInterval;
+            console.log('Meditation timer set to ' + displayValue);
+            if (meditationTimer !== null) {
+                stopMeditation();
+                startMeditation();
+                console.log("Restarted Meditation");
+            }
+        }
+
+        function startMeditation() {
+            if (meditationTimer == null) {
+                meditationTimer = setTimeout(async () => {
+                    playSound();
+                    await wait(2000);
+                    playSound();
+                    await wait(2000);
+                    playSound();
+                    stop();
+                }, meditationDelay);
+            } else {
+                alert('Meditation already running');
+            }
+        };
+
+        function stopMeditation() {
+            clearTimeout(meditationTimer);
+            meditationTimer = null;
+            console.log('Stopped Meditation');
+        };
+
+        function start() {
+            startBell();
+            startMeditation();
+        }
+
+        function stop() {
+            stopBell();
+            stopMeditation();
+        }
+
+        function setVolume(vol) {
+            console.log(vol);
+            volume = vol;
+        }
+    </script>
+</head>
+
+<body onclick="playBackground()">
+    <main class="container">
+        <h4>Bell Interval</h4>
+
+        <select style="margin-top: -20px;" name="Time"
+            onchange="resetBell(event.currentTarget.value, event.currentTarget.options[event.currentTarget.selectedIndex].text)"
+            id="timerInterval">
+            <option value="15000">fifteen seconds</option>
+            <option value="30000">thirty seconds</option>
+            <option value="60000">one minute</option>
+            <option selected="true" value="120000">two minutes</option>
+            <option value="180000">three minutes</option>
+            <option value="300000">five minutes</option>
+            <option value="600000">ten minutes</option>
+        </select>
+
+
+        <h4>Meditation Session Time</h4>
+        <select style="margin-top: -20px;" name="Time"
+            onchange="resetMeditation(event.currentTarget.value, event.currentTarget.options[event.currentTarget.selectedIndex].text)"
+            id="timerInterval">
+            <option value="60000">one minute</option>
+            <option value="300000">five minutes</option>
+            <option selected value="600000">ten minutes</option>
+            <option value="1200000">twenty minutes</option>
+            <option value="00000">thirty minutes</option>
+        </select>
+        <h4>Volume</h4>
+        <input style="margin-top: -20px;" onchange="setVolume(event.currentTarget.value)" value="0.5" type="range"
+            min="0" max="1" step="0.1" />
+        <p></p>
+        <button onclick="start()">Start</button>
+        <button onclick="stop()">Stop</button>
+
+    </main>
+
+</body>
+
+</html>
