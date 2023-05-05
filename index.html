@@ -12,7 +12,7 @@
         let context = null;
         let sources = [];
         let gain = null;
-        let soundBuffer = [];
+        let soundBuffer = {};
         let settings = JSON.parse(localStorage.getItem('meditator'));
         let { meditationDelay, delay, volume, bellSound } = { ...{ meditationDelay: 600_000, delay: 120000, volume: 0.5, bellSound: 'bell1.wav' }, ...settings, }
         let interval = null;
@@ -33,30 +33,42 @@
         }
         const loadSound = async (url) => {
             if (soundBuffer[url] == null) {
+                try {
+                    if (context === null) {
+                        context = new AudioContext();
 
-                if (context === null) {
-                    context = new AudioContext();
+                    }
+                    gain = context.createGain()
+                    gain.gain.value = Number(volume);
+                    gain.connect(context.destination);
+                    stopBell();
+
+                    const result = await fetch(url);
+                    let undecodedAudio = await result.arrayBuffer();
+                    soundBuffer[url] = await context.decodeAudioData(undecodedAudio);
+                } catch (e) {
+                    console.log(e);
                 }
-                stopBell();
-                gain = context.createGain()
-                gain.gain.value = Number(volume);
-                gain.connect(context.destination);
-
-                const result = await fetch(url);
-                let undecodedAudio = await result.arrayBuffer();
-                soundBuffer[url] = await context.decodeAudioData(undecodedAudio);
             }
         };
 
 
         function playSound(buffer, time) {
             console.log(time);
-            var source = context.createBufferSource();
-            source.buffer = buffer;
-            source.volume = volume;
-            source.connect(gain);
-            source.start(time);
-            sources.push(source);
+            if (!buffer || buffer.length === 0) {
+                return;
+            }
+            try {
+                var source = context.createBufferSource();
+
+                source.buffer = buffer;
+                source.volume = volume;
+                source.connect(gain);
+                source.start(time);
+                sources.push(source);
+            } catch (e) {
+                console.log('Error in playSound', e);
+            }
         }
 
         const startBell = () => {
@@ -68,14 +80,14 @@
                 console.log(meditationDelay);
                 for (let i = 0; i < Number(meditationDelay); i = i + Number(delay)) {
 
-                    playSound(soundBuffer[bellSound], startTime + i / 1000, gain);
+                    playSound(soundBuffer[bellSound], startTime + i / 1000);
                 }
-                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000), gain);
-                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000) + 5, gain);
-                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000) + 10, gain);
+                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000));
+                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000) + 5);
+                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000) + 10);
                 for (let i = 0; i < Number(meditationDelay); i = i + 5000) {
 
-                    playSound(soundBuffer['silence.wav'], startTime + i / 1000, gain);
+                    playSound(soundBuffer['silence.wav'], startTime + i / 1000);
                 }
 
 
@@ -97,7 +109,7 @@
         function resetBell(timerInterval, displayValue) {
             delay = Number(timerInterval);
             console.log('Timer set to ' + displayValue + ' ' + timerInterval);
-            if (interval !== null) {
+            if (delay !== null) {
                 stopBell();
                 startBell();
                 console.log("Restarted Bell");
@@ -114,8 +126,6 @@
             }
         }
 
-
-
         function start() {
             startBell();
         }
@@ -128,6 +138,7 @@
         function setVolume(vol) {
             console.log(vol);
             volume = Number(vol);
+            gain.gain.value = volume;
         }
 
         function saveSettings() {
@@ -138,7 +149,7 @@
             console.log('new sound' + sound);
             bellSound = sound;
             await loadSound(sound);
-            playSound(soundBuffer, 0);
+            playSound(soundBuffer[sound], 0);
         }
     </script>
 </head>
@@ -190,8 +201,8 @@
             <option value="3600000">sixty minutes</option>
         </select>
         <h4>Volume</h4>
-        <input id="volumeSlider" style="margin-top: -20px;"
-            onchange="setVolume(event.currentTarget.value);saveSettings()" type="range" min="0" max="1" step="0.1" />
+        <input id="volumeSlider" style="margin-top: -20px;" on
+            oninput="setVolume(event.currentTarget.value);saveSettings()" type="range" min="0" max="1" step="0.02" />
         <p></p>
         <button id]="playSound" onclick="start()">Start</button>
         <button onclick="stop()">Stop</button>
