@@ -15,6 +15,7 @@ This app can also be used as a meeting timer. For example you might set a 60 min
 The app is written in modern 'vanilla JS' so there's no compilation step. Just run:
 
 ```
+npm install
 npm run start
 ```
 
