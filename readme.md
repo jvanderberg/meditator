@@ -8,7 +8,7 @@ This helps you relax, not having to worry about when the session ends. The
 sounds in the middle of the interval indicate progress and help to draw you back
 into meditation and out of stray thoughts.
 
-This app can also be used as a meeting timer. For example you might set a 60 minute session time with an interval of twenty or thirty minutes. 'First bell, and we haven't even gotten past the first slide, let's move it along folks'.
+This app can also be used as a meeting timer. For example you might set a 45 minute session time with an interval of 15 minutes. 'First bell, and we haven't even gotten past the first slide, let's move it along folks'.
 
 # Running the app
 
