@@ -14,7 +14,8 @@
         let gain = null;
         let soundBuffer = {};
         let settings = JSON.parse(localStorage.getItem('meditator'));
-        let { meditationDelay, delay, volume, bellSound } = { ...{ meditationDelay: 600_000, delay: 120000, volume: 0.5, bellSound: 'bell1.wav' }, ...settings, }
+        let { meditationDelay, delay, volume, bellSound } = { ...{ meditationDelay: 600_000, delay: 120000, volume: 0.5, bellSound: 'bell1.mp3' }, ...settings, }
+
         let interval = null;
         let request = window.indexedDB.open("Keep Window Open", 3);
         let backgroundPlaying = false;
@@ -160,13 +161,13 @@
         <select id="bellSoundSelector" style="margin-top: -20px;"
             onchange="resetBellSound(event.currentTarget.value, event.currentTarget.options[event.currentTarget.selectedIndex].text);saveSettings()"
             id="timerInterval">
-            <option value="bell1.wav">Bell</option>
-            <option value="bell2.wav">Ding?</option>
+            <option value="bell1.mp3">Bell</option>
+            <option value="bell2.mp3">Ding?</option>
             <!-- <option value="bell3.mp3">Clear as Bell</option> -->
-            <option value="bong.wav">Bong</option>
-            <option value="deep bowl.wav">Deep Bowl</option>
-            <option value="longbell.wav">Long Gong</option>
-            <option value="ting.wav">Ting</option>
+            <option value="bong.mp3">Bong</option>
+            <option value="deep bowl.mp3">Deep Bowl</option>
+            <option value="longbell.mp3">Long Gong</option>
+            <option value="ting.mp3">Ting</option>
         </select>
 
         <h4>Bell Interval</h4>
