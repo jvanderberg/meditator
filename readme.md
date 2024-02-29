@@ -2,9 +2,9 @@
 
 This is an app that provides an anchor for unguided meditation. It will
 emit the selected sound on the selected interval, and at the end of the
-session play the sound three times in succession to signal the end of the session.
+session play the sound three times in succession to signal completion.
 
-This helps your relax, not having to worry about when the session ends. The
+This helps you relax, not having to worry about when the session ends. The
 sounds in the middle of the interval indicate progress and help to draw you back
 into meditation and out of stray thoughts.
 
@@ -25,7 +25,7 @@ The app can also be found online at: [http://meditator.surge.sh](http://meditato
 # Using the app
 
 1. Select a Bell
-2. Select an interval. 'Three Minutes' means the bell will play once ever three minutes.
+2. Select an Interval. 'Three Minutes' means the bell will play once ever three minutes.
 3. Select a session length. This is how long the session will last.
 4. Click 'Start'. The session will begin with a single bell chime. There's no visual indication that the session is in progress.
 
