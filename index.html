@@ -1,0 +1,222 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calming Meditation</title>
+
+    <link rel="stylesheet" href="pico.css">
+    <style>
+    </style>
+    <script type="text/javascript">
+        let context = null;
+        let sources = [];
+        let gain = null;
+        let soundBuffer = {};
+        let settings = JSON.parse(localStorage.getItem('meditator'));
+        let { meditationDelay, delay, volume, bellSound } = { ...{ meditationDelay: 600_000, delay: 120000, volume: 0.5, bellSound: 'bell1.mp3' }, ...settings, }
+
+        let interval = null;
+        let request = window.indexedDB.open("Keep Window Open", 3);
+        let backgroundPlaying = false;
+
+        const wait = (ms) => new Promise(r => setTimeout(r, ms));
+        async function playBackground() {
+            if (backgroundPlaying) return;
+            try {
+                var audio = new Audio('silence.wav');
+                audio.volume = 1;
+                audio.loop = true
+                audio.play();
+            } catch (e) {
+                backgroundPlaying = false;
+            }
+        }
+        const loadSound = async (url) => {
+            if (soundBuffer[url] == null) {
+                try {
+                    if (context === null) {
+                        context = new AudioContext();
+
+                    }
+                    gain = context.createGain()
+                    gain.gain.value = Number(volume);
+                    gain.connect(context.destination);
+                    stopBell();
+
+                    const result = await fetch(url);
+                    let undecodedAudio = await result.arrayBuffer();
+                    soundBuffer[url] = await context.decodeAudioData(undecodedAudio);
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        };
+
+
+        function playSound(buffer, time) {
+            console.log(time);
+            if (!buffer || buffer.length === 0) {
+                return;
+            }
+            try {
+                var source = context.createBufferSource();
+
+                source.buffer = buffer;
+                source.volume = volume;
+                source.connect(gain);
+                source.start(time);
+                sources.push(source);
+            } catch (e) {
+                console.log('Error in playSound', e);
+            }
+        }
+
+        const startBell = () => {
+            if (soundBuffer[bellSound]) {
+
+                stopBell();
+                const startTime = context.currentTime
+                console.log(delay);
+                console.log(meditationDelay);
+                for (let i = 0; i < Number(meditationDelay); i = i + Number(delay)) {
+
+                    playSound(soundBuffer[bellSound], startTime + i / 1000);
+                }
+                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000));
+                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000) + 5);
+                playSound(soundBuffer[bellSound], startTime + (meditationDelay / 1000) + 10);
+                for (let i = 0; i < Number(meditationDelay); i = i + 5000) {
+
+                    playSound(soundBuffer['silence.wav'], startTime + i / 1000);
+                }
+
+
+            } else {
+
+                alert("Wait for sound to load");
+            }
+        };
+
+        function stopBell() {
+
+            for (const source of sources) {
+                source.stop();
+            }
+            sources = [];
+            console.log('Stopped');
+        };
+
+        function resetBell(timerInterval, displayValue) {
+            delay = Number(timerInterval);
+            console.log('Timer set to ' + displayValue + ' ' + timerInterval);
+            if (delay !== null) {
+                stopBell();
+                startBell();
+                console.log("Restarted Bell");
+            }
+        }
+
+        function resetMeditation(timerInterval, displayValue) {
+            meditationDelay = Number(timerInterval);
+            console.log('Meditation timer set to ' + displayValue);
+            if (meditationTimer !== null) {
+                stopMeditation();
+                startMeditation();
+                console.log("Restarted Meditation");
+            }
+        }
+
+        function start() {
+            startBell();
+        }
+
+        function stop() {
+            stopBell();
+            console.log('Stopped Meditation');
+        }
+
+        function setVolume(vol) {
+            console.log(vol);
+            volume = Number(vol);
+            gain.gain.value = volume;
+        }
+
+        function saveSettings() {
+            localStorage.setItem('meditator', JSON.stringify({ volume, meditationDelay, delay, bellSound }))
+        }
+
+        async function resetBellSound(sound, description) {
+            console.log('new sound' + sound);
+            bellSound = sound;
+            await loadSound(sound);
+            playSound(soundBuffer[sound], 0);
+        }
+    </script>
+</head>
+
+<body onload="loadSound(bellSound);loadSound('silence.wav')">
+    <main class="container">
+        <h4>Bell</h4>
+        <select id="bellSoundSelector" style="margin-top: -20px;"
+            onchange="resetBellSound(event.currentTarget.value, event.currentTarget.options[event.currentTarget.selectedIndex].text);saveSettings()"
+            id="timerInterval">
+            <option value="bell1.mp3">Bell</option>
+            <option value="bell2.mp3">Ding?</option>
+            <!-- <option value="bell3.mp3">Clear as Bell</option> -->
+            <option value="bong.mp3">Bong</option>
+            <option value="deep bowl.mp3">Deep Bowl</option>
+            <option value="longbell.mp3">Long Gong</option>
+            <option value="ting.mp3">Ting</option>
+        </select>
+
+        <h4>Bell Interval</h4>
+
+        <select id="delaySelector" style="margin-top: -20px;"
+            onchange="resetBell(event.currentTarget.value, event.currentTarget.options[event.currentTarget.selectedIndex].text);saveSettings()"
+            id="timerInterval">
+            <option value="15000">fifteen seconds</option>
+            <option value="30000">thirty seconds</option>
+            <option value="60000">one minute</option>
+            <option selected="true" value="120000">two minutes</option>
+            <option value="180000">three minutes</option>
+            <option value="300000">five minutes</option>
+            <option value="600000">ten minutes</option>
+            <option value="1200000">twenty minutes</option>
+            <option value="1800000">thirty minutes</option>
+        </select>
+
+
+        <h4>Meditation Session Time</h4>
+        <select id="meditationDelaySelector" style="margin-top: -20px;"
+            onchange="resetMeditation(event.currentTarget.value, event.currentTarget.options[event.currentTarget.selectedIndex].text);saveSettings()"
+            id="timerInterval">
+            <option value="60000">one minute</option>
+            <option value="300000">five minutes</option>
+            <option selected value="600000">ten minutes</option>
+            <option value="1200000">twenty minutes</option>
+            <option value="1800000">thirty minutes</option>
+            <option value="1800000">forty five minutes</option>
+            <option value="2700000">forty-five minutes</option>
+            <option value="3300000">fifty-five minutes</option>
+            <option value="3600000">sixty minutes</option>
+        </select>
+        <h4>Volume</h4>
+        <input id="volumeSlider" style="margin-top: -20px;" on
+            oninput="setVolume(event.currentTarget.value);saveSettings()" type="range" min="0" max="1" step="0.02" />
+        <p></p>
+        <button id]="playSound" onclick="start()">Start</button>
+        <button onclick="stop()">Stop</button>
+
+    </main>
+
+</body>
+<script>
+    document.getElementById('bellSoundSelector').value = bellSound;
+    document.getElementById('volumeSlider').value = volume;
+    document.getElementById('delaySelector').value = delay;
+    document.getElementById('meditationDelaySelector').value = meditationDelay;
+
+</script>
+
+</html>

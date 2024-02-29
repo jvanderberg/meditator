@@ -1,0 +1,24 @@
+{
+    "name": "meditation",
+    "version": "1.0.0",
+    "description": "Meditation app",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "serve"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/jvanderberg/meditator.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/jvanderberg/meditator/issues"
+    },
+    "homepage": "https://github.com/jvanderberg/meditator#readme",
+    "dependencies": {
+        "serve": "^13.0.2",
+        "surge": "^0.23.1"
+    }
+}
